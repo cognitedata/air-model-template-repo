@@ -1,0 +1,13 @@
+Projectproperties:
+  cdf-project-name-one: ["https://api.cognitedata.com", "CDF_PROJECT_API_KEY"] # This is how to initialise the API authentication (This is for legacy projects only)
+  cdf-project-name-two: # This is how to initialise OIDC authentication
+    base_url: "Enter cdf cluster url here"
+    tenant_id: "Enter the tenant ID here"
+    client_id: "Enter the client ID here"
+    secret_name: "Name of github actions secret for cdf project"
+    token_url: "Enter the token url here"
+    scopes: [ "Enter the scope here" ]
+ProjectFunctionMap:
+  functionfoldername:
+    - cdf-project
+

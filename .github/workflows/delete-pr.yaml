@@ -1,0 +1,116 @@
+name: 'Functions build: PR closed'
+
+on:
+  pull_request:
+    types: closed
+    paths:
+      - '**'
+env:
+  secrets: ${{ toJson(secrets) }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GITHUB_REPOSITORY_TOKEN: ${{ github.repository }}
+  IS_DELETE: true
+  MULTI_DEPLOYMENT: 'true'
+# if you want to deploy to more projects add the API key here
+jobs:
+  cfm:
+    name: Setting up function matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 50
+
+      - uses: actions/setup-python@v1
+        name: Setup Python
+        with:
+            python-version: 3.8
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1.1.1
+        with:
+            virtualenvs-create: true
+            virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+                path: .venv
+                key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        run: poetry install
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+
+      - id: set-env
+        name: Creating Env Variables
+        run:
+                |
+                poetry run python -m cognite.airworkflow.env_creator "$secrets"
+
+      - id: set-matrix
+        name: Creating Function Matrix
+        shell: bash
+        run:
+          |
+          bash ./.github/filepaths.sh
+  deploy:
+    runs-on: ubuntu-latest
+    needs: cfm
+    strategy:
+        fail-fast: false
+        matrix: ${{fromJson(needs.cfm.outputs.matrix)}}
+    steps:
+      - uses: actions/checkout@v2
+        name: Checkout code
+        with:
+          fetch-depth: 50
+
+      - uses: actions/setup-python@v1
+        name: Setup Python
+        with:
+            python-version: 3.8
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1.1.1
+        with:
+                virtualenvs-create: true
+                virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+                path: .venv
+                key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        run: poetry install
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+
+      - id: set-env
+        name: Creating Env Variables
+        run:
+            |
+            poetry run python -m cognite.airworkflow.env_creator "$secrets"
+
+      - name: Function Name
+        id: function_name
+        run: |
+            functionproject=${{ matrix.functionproject }}
+            function_name=$( echo "$functionproject" |cut -d\@ -f1 )
+            echo ::set-output name=function_name::${function_name}
+
+      - uses: marceloprado/has-changed-path@master
+        name: Check code changes
+        id: changed-code
+        with:
+          paths: functions/${{ steps.function_name.outputs.function_name }}
+
+      - name: Delete function
+        if: steps.changed-code.outputs.changed == 'true'
+        run: poetry run python -m cognite.airworkflow.run function ${{ matrix.functionproject }}
