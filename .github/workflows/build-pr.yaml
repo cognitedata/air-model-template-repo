@@ -1,0 +1,131 @@
+name: 'Functions build: PR opened/updated'
+
+on:
+  pull_request:
+    paths:
+      - '**'
+env:
+  secrets: ${{ toJson(secrets) }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GITHUB_REPOSITORY_TOKEN: ${{ github.repository }}
+  LATEST_COMMIT: ${{github.event.pull_request.head.sha}}
+  MULTI_DEPLOYMENT: 'true'
+
+# if you want to deploy to more projects add the API key here
+jobs:
+  cfm:
+    name: Setting up function matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      empty_matrix: ${{ steps.set-matrix.outputs.empty_matrix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 50
+
+      - uses: actions/setup-python@v1
+        name: Setup Python
+        with:
+          python-version: 3.8
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1.1.1
+        with:
+            virtualenvs-create: true
+            virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+                path: .venv
+                key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        run: poetry install
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+
+      - id: set-env
+        name: Creating Env Variables
+        run:
+            |
+            poetry run python -m cognite.airworkflow.env_creator "$secrets"
+
+      - name: Setting matrix
+        id: set-matrix
+        run: |
+          output=$(poetry run python -m cognite.airworkflow.matrix_generator)
+          empty=$(poetry run python -m cognite.airworkflow.empty_matrix_checker)
+          echo "::set-output name=matrix::$output"
+          echo ::set-output name=empty_matrix::${empty}
+          echo $empty
+  deploy:
+        name: Deploying functions
+        runs-on: ubuntu-latest
+        needs: cfm
+        if: needs.cfm.outputs.empty_matrix == 'False'
+        strategy:
+          matrix: ${{fromJson(needs.cfm.outputs.matrix)}}
+          fail-fast: false
+        steps:
+          - uses: actions/checkout@v2
+            name: Checkout code
+            with:
+              fetch-depth: 50
+
+          - name: Function Name
+            id: function_name
+            run: |
+              functionproject=${{ matrix.functionproject }}
+              function_name=$( echo "$functionproject" |cut -d\@ -f1 )
+              echo ::set-output name=function_name::${function_name}
+
+          - uses: actions/setup-python@v1
+            name: Setup Python
+            with:
+              python-version: 3.8
+
+          - name: Install Poetry
+            if: ${{env.MULTI_DEPLOYMENT}}  == 'true'
+            uses: snok/install-poetry@v1.1.1
+            with:
+              virtualenvs-create: true
+              virtualenvs-in-project: true
+
+          - name: Load cached venv
+            if: ${{env.MULTI_DEPLOYMENT}}  == 'true'
+            id: cached-poetry-dependencies
+            uses: actions/cache@v2
+            with:
+              path: .venv
+              key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+          - name: Install dependencies
+            run: poetry install
+            if: ${{env.MULTI_DEPLOYMENT}} == 'true' && steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+
+          - id: set-env
+            name: Creating Env Variables
+            run:
+                |
+                poetry run python -m cognite.airworkflow.env_creator "$secrets"
+
+          - name: Check code standards
+            run: |
+              poetry run black --check .
+              poetry run isort --check-only -rc .
+
+          - name: Check application security
+            run: |
+              poetry run bandit -r . -x .github/env_creator.py,./.venv -s B101,B311
+
+          - name: Unit test
+            run: poetry run pytest -s functions/${{ steps.function_name.outputs.function_name }} -m "unit" --suppress-no-test-exit-code
+
+          - name: Deploying function ${{ steps.function_name.outputs.function_name }}
+            run: poetry run python -m cognite.airworkflow.run function ${{ matrix.functionproject }}
+
+          - name: Integration test
+            run: poetry run pytest functions/${{ steps.function_name.outputs.function_name }} -m "integration" --suppress-no-test-exit-code

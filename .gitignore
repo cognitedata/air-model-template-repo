@@ -1,7 +1,12 @@
+sa_credentials.json
+test-scripts
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+.DS_Store
+.idea
 
 # C extensions
 *.so
@@ -127,3 +132,22 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Project specific ignores
+air_backfilling_service/requirements.txt
+deployment_config
+test.groovy
+function.zip
+/src/main_utils/
+/src/configs.yaml
+/functions/**/function/resources/
+**.env*
+#poetry.lock
+**.ipynb
+**/function/main_utils
+.commit
+test.py
+
+jpt_scripts
+customers/omv
+.vscode
