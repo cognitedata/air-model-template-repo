@@ -9,7 +9,7 @@ Before proceeding make sure all necessary [onboarding steps](https://docs.cognit
 4. `poetry run pre-commit install`: This installs the required pre-commit hooks.
 
 ### Setting up Github secrets for API keys 
-Please Note : API keys are deprecated please use OIDC authentication going forward.
+Please Note : API keys are deprecated,please use OIDC authentication going forward.
 
 1. This repo makes use of GitHub Actions to perform deployment and testing of your model.
 2. The air-demo-repo template requires the following secrets to be [defined in GitHub](https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets) (Settings >> Secrets):
@@ -29,7 +29,7 @@ Please ensure that this secret name matches what is defined in the reconfig.yaml
 ### Creating a Model
 (Find all documentation here: [air-documentation](https://docs.cognite.com/cdf/air/))
 
-0. Create a new development branch with `git checkout -b your_branch_name`
+0. Create a new development branch with `git checkout -b your_branch_name`.
 
 1. Any function in this repo needs to have it's own folder in the `functions` folder. In order to get started feel free to rename and edit the existing `templatefunction`. 
 
