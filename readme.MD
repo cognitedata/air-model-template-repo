@@ -27,7 +27,7 @@ Please make sure that your api key has the correct permissions required to use C
 Please ensure that this secret name matches what is defined in the reconfig.yaml file.
 
 ### Creating a Model
-(Find all documentation here: [https://cog.link/air-documentation](https://docs.cognite.com/cdf/air/))
+(Find all documentation here: [air-documentation](https://docs.cognite.com/cdf/air/))
 
 0. Create a new development branch with `git checkout -b your_branch_name`
 
@@ -35,8 +35,7 @@ Please ensure that this secret name matches what is defined in the reconfig.yaml
 
 2. Edit the `config.yaml`. This file is handling the interaction with the AIR Infrastructure and Front End. Read more about it [here](https://docs.cognite.com/cdf/air/concepts/configurationfile).
 
-3. When using AIR, it is encouraged to use the AIR client to get all the benefits of retrieving information about [schedules](https://docs.cognite.com/cdf/air/concepts/schedule), writing [versioned](https://docs.cognite.com/cdf/air/guides/versioning), [Events](https://docs.cognite.com/cdf/air/guides/alert), [notifications to the end user](https://docs.cognite.com/cdf/air/guides/alert), and [visualize calculated Time Series](https://docs.cognite.com/cdf/air/guides/createts) in the Front End. Additionally, 
-AIR is using Cognite Functions which is documented [here](https://cognitedata.atlassian.net/wiki/spaces/datastudio/pages/1582171375/FAQ+on+Functions).
+3. When using AIR, it is encouraged to use the AIR client to get all the benefits of retrieving information about [schedules](https://docs.cognite.com/cdf/air/concepts/schedule), writing [versioned](https://docs.cognite.com/cdf/air/guides/versioning), [Events](https://docs.cognite.com/cdf/air/guides/alert), [notifications to the end user](https://docs.cognite.com/cdf/air/guides/alert), and [visualize calculated Time Series](https://docs.cognite.com/cdf/air/guides/createts) in the Front End.
 
 4. Add all required libraries for your function to the `requirements.txt` file. Please make sure to add the air-sdk library to the requirements for every project. Additionally, install all packages to poetry as well since those are needed for unit and integration tests.
 
