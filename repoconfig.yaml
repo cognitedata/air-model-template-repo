@@ -9,5 +9,6 @@ Projectproperties:
     scopes: [ "Enter the scope here" ]
 ProjectFunctionMap:
   functionfoldername:
-    - cdf-project
+    - cdf-project-name-one
+    - cdf-project-name-two
 
