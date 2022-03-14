@@ -16,7 +16,7 @@ Please Note : API keys are deprecated,please use OIDC authentication going forwa
     
     a) PROJECT_NAME_API_KEY: This is your api key for the project in question . For example an API key for eureka tad dev would be defned as EUREKA_TAD_DEV_API_KEY.
     
-Please make sure that your api key has the correct permissions required to use Cognite Functions and AIR. It's a good idea to use the api key generated in the [onboarding steps](https://cognitedata.atlassian.net/wiki/spaces/AIR/pages/1910407214/Onboarding+to+AIR).
+Please make sure that your api key has the correct permissions required to use Cognite Functions and AIR.
 
 ### Setting up Github secrets for OIDC projects
 1. This repo makes use of GitHub Actions to perform deployment and testing of your model.
