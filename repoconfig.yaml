@@ -1,7 +1,6 @@
 Projectproperties: {} # replace empty object with your own configuration
   # Example:
-  # cdf-project-name-one: ["https://api.cognitedata.com", "CDF_PROJECT_API_KEY"] # This is how to initialise the API authentication (This is for legacy projects only)
-  # cdf-project-name-two: # This is how to initialise OIDC authentication
+  # cdf-project-name-one: # This is how to initialise OIDC authentication
   #   base_url: "Enter cdf cluster url here"
   #   tenant_id: "Enter the tenant ID here"
   #   client_id: "Enter the client ID here"
@@ -12,5 +11,3 @@ ProjectFunctionMap: {} # replace empty object with your own configuration
   # Example:
   # functionfoldername:
   #   - cdf-project-name-one
-  #   - cdf-project-name-two
-
